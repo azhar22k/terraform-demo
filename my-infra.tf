@@ -1,26 +1,15 @@
-terraform {
-  # This is enabled to use validation in variable
-  experiments = [variable_validation]
-}
-
 variable "region" {
     description = "AWS region in which Infra will be deployed"
     type = string
     default = "eu-west-1"
 }
+variable "stage" {}
 
-variable "stage" {
-    description = "Stage on which infra should be deployed"
-    type = string
-    validation {
-        condition = can(regex("latest|test|beta|prod", var.stage))
-        error_message = "Invalid stage! Allowed values are [latest, test, beta, prod]."
-    }
+module "base" {
+    source = "./modules/base"
+    stage = var.stage
 }
-variable "tenant" {
-    description = "Generated resources will {stage}-demo-{tenant}"
-    type = string
-}
+
 provider "aws" {
     version = "~> 2.62"
     profile = "peak-dev"
@@ -32,25 +21,19 @@ provider "kubernetes" {
     config_context = "dev"
 }
 
-locals {
-    tags = {
-        stage = var.stage
-        tenant = "platform"
-        feature = "demo"
-        service = "demo"
-    }
-}
 resource "aws_s3_bucket" "tenant_bucket" {
-  bucket = "${var.stage}-demo-${var.tenant}"
-  acl    = "private"
-  tags = local.tags
+    depends_on = [module.base]
+    bucket = "${module.base.stage}-demo-${module.base.tenant}"
+    acl    = "private"
+    tags = module.base.tags
 }
 
 resource "kubernetes_namespace" "tenant_namespace" {
-  metadata {
-    labels = local.tags
-    name = "${var.stage}-demo-${var.tenant}"
-  }
+    depends_on = [module.base]
+    metadata {
+        labels = module.base.tags
+        name = "${module.base.stage}-demo-${module.base.tenant}"
+    }
 }
 
 output "s3_arn" {
