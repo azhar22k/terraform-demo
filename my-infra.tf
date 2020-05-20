@@ -22,14 +22,12 @@ provider "kubernetes" {
 }
 
 resource "aws_s3_bucket" "tenant_bucket" {
-    depends_on = [module.base]
     bucket = "${module.base.stage}-demo-${module.base.tenant}"
     acl    = "private"
     tags = module.base.tags
 }
 
 resource "kubernetes_namespace" "tenant_namespace" {
-    depends_on = [module.base]
     metadata {
         labels = module.base.tags
         name = "${module.base.stage}-demo-${module.base.tenant}"
