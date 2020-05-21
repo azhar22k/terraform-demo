@@ -6,7 +6,7 @@ variable "region" {
 variable "stage" {}
 
 module "base" {
-    source = "./modules/base"
+    source = "github.com/azhar22k/terraform-demo//modules/base?ref=v0.0.1"
     stage = var.stage
 }
 
