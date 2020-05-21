@@ -1,3 +1,15 @@
+terraform {
+  backend "s3" {
+    # Replace this with your bucket name!
+    bucket         = "ais-infra-states"
+    key            = "live-demo/terraform.tfstate"
+    region         = "eu-west-1"
+    profile        = "peak-dev"
+    # Replace this with your DynamoDB table name!
+    dynamodb_table = "ais-infra-locks"
+    encrypt        = true
+  }
+}
 variable "region" {
     description = "AWS region in which Infra will be deployed"
     type = string

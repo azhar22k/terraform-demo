@@ -3,10 +3,12 @@ variable "region" {
     type = string
     default = "eu-west-1"
 }
-variable "stage" {}
+variable "stage" {
+  default = "platform"
+}
 
 module "base" {
-    source = "github.com/azhar22k/terraform-demo//modules/base?ref=v0.0.1"
+    source = "../base"
     stage = var.stage
 }
 
@@ -17,7 +19,7 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket = "${module.base.stage}-ais-terraform-state"
+  bucket = "ais-infra-states"
   # Enable versioning so we can see the full revision history of our state files
   versioning {
     enabled = true
@@ -34,7 +36,7 @@ resource "aws_s3_bucket" "terraform_state" {
 }
 
 resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "${module.base.stage}-ais-terraform-lock"
+  name         = "ais-infra-locks"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
   attribute {
